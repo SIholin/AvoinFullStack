@@ -1,5 +1,6 @@
 import { useState , useEffect } from 'react'
 import personService from './services/persons'
+import './index.css'
 
 const Filter = (props) => {
   return (
@@ -42,11 +43,31 @@ const Persons = (props) => {
   )
 }
 
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  if (message.includes('Already')) {
+    return (
+      <div className='fail'>
+        {message}
+      </div>
+    )
+  }
+  return (
+    <div className='success'>
+      {message}
+    </div>
+  )
+}
+
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [successMessage, setSuccessMessage] = useState(null)
 
   const addPerson = () => {
     event.preventDefault()
@@ -64,6 +85,16 @@ const App = () => {
             setPersons(persons.map(p => p.id !== id ? p : returnP))
             setNewName('')
             setNewNumber('')
+            setSuccessMessage(`Updated ${newName}!`)
+            setTimeout(() => {
+              setSuccessMessage(null)
+            }, 5000)
+          }).catch(() => {
+            setSuccessMessage(`Already deleted ${newName}!`)
+            setTimeout(() => {
+              setSuccessMessage(null)
+            }, 5000)
+            setPersons(persons.filter(p => p.id !== id))
           })
       }
     } else {
@@ -72,6 +103,10 @@ const App = () => {
           setPersons(persons.concat(resp.data))
           setNewName('')
           setNewNumber('')
+          setSuccessMessage(`Added ${newName}!`)
+          setTimeout(() => {
+            setSuccessMessage(null)
+          }, 5000)
         })
     }
   }
@@ -82,6 +117,10 @@ const App = () => {
     if (window.confirm(`Delete ${name}?`)) {
         personService.deletePerson(id)
         setPersons(persons.filter(p => p.id !== id))
+        setSuccessMessage(`Deleted ${name}!`)
+        setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
     }
   }
 
@@ -107,6 +146,7 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
+      <Notification message ={successMessage} />
       <Filter filter={filter} change={handleFilter}/>
       <h2>Add a new</h2>
       <PersonForm addPerson={addPerson} name={newName} number={newNumber} nameChange={handleNameChange} numberChange={handleNumberChange}/>
