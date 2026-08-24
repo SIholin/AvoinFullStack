@@ -55,6 +55,13 @@ const Notification = ({ message }) => {
       </div>
     )
   }
+  if (message.includes('failed')) {
+    return (
+      <div className='fail'>
+        {message}
+      </div>
+    )
+  }
   return (
     <div className='success'>
       {message}
@@ -107,6 +114,11 @@ const App = () => {
           setTimeout(() => {
             setSuccessMessage(null)
           }, 5000)
+        }).catch(resp => {
+          setSuccessMessage(resp.response.data.error)
+            setTimeout(() => {
+              setSuccessMessage(null)
+            }, 10000)
         })
     }
   }

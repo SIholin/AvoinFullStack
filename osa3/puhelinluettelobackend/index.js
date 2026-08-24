@@ -65,24 +65,13 @@ app.put('/api/persons/:id', (req, resp, next) => {
 
 app.post('/api/persons', (req, resp, next) => {
     const body = req.body
-
-    try {
-        if (!body.number || !body.name) {
-            resp.status(400)
-            throw new Error('content missing')
-        }
-
-        const contact = new Contact({
-            name: body.name,
-            number: body.number,
-        })
-        contact.save().then(savedC => {
-            resp.json(savedC)
-        }).catch(e => next(e))
-
-    } catch (e) {
-        next(e)
-    }
+    const contact = new Contact({
+        name: body.name,
+        number: body.number,
+    })
+    contact.save().then(savedC => {
+        resp.json(savedC)
+    }).catch(e => next(e))
 })
 
 const unknownEndoint = (req, resp) => {
@@ -95,9 +84,11 @@ const errorHandler = (error, req, resp, next) => {
     console.error(error.message)
     if (error.name === 'CastError') {
         return resp.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return resp.status(400).json({ error: error.message })
     }
 
-    return resp.send({ error: error.message })
+    next(error)
 }
 
 app.use(errorHandler)
